@@ -125,7 +125,6 @@ on p."paper id"=pa."paper id"
 join institutions i
 on pa."affiliation id"=i."affiliation id";
 
-
 create table ai_papers_institutions as
 select pac.*
 from paper_authors_w_countries_table pac

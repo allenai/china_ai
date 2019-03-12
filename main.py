@@ -4,10 +4,10 @@ Field Cady and Oren Etzioni are working on.
 '''
 
 import pandas as pd
-import pys2
+import matplotlib
 from matplotlib import pyplot as plt
 from scipy import stats
-import matplotlib
+import pys2  # library internal to Allen Institute
 
 # The field we use to tell rank paper importance
 CITATION_COUNT_FIELD = "estimated citation count"
@@ -17,7 +17,9 @@ CITATION_COUNT_FIELD = "estimated citation count"
 # a paper is cited.
 df = pys2._evaluate_redshift_query('select * from ai_papers_any_author_table where yr<2019 and yr>1980')
 df["citation_count"] = df[CITATION_COUNT_FIELD].astype(int)
-df['china'] = df.dotcn.astype(bool) | df.dothk.astype(bool) | df.china_name.astype(bool) | df.china_language.astype(bool) | df.china_city.astype(bool)
+df['china'] = df.dotcn.astype(bool) | df.dothk.astype(bool) \
+    | df.china_name.astype(bool) | df.china_language.astype(bool) \
+    | df.china_city.astype(bool)
 df['usa'] = df.dotedu.astype(bool) | df.dotedu.astype(bool)
 df['top_half_cutoff'] = df.groupby('yr').citation_count.transform(lambda x: (x-x)+x.quantile(0.5))
 df['top_tenth_cutoff'] = df.groupby('yr').citation_count.transform(lambda x: (x-x)+x.quantile(0.9))
