@@ -20,13 +20,12 @@ df["citation_count"] = df[CITATION_COUNT_FIELD].astype(int)
 df['china'] = df.dotcn.astype(bool) | df.dothk.astype(bool) \
     | df.china_name.astype(bool) | df.china_language.astype(bool) \
     | df.china_city.astype(bool)
-df['usa'] = df.dotedu.astype(bool) | df.dotedu.astype(bool)
+df['us'] = df.dotedu.astype(bool) | df.dotedu.astype(bool)
 df['top_half_cutoff'] = df.groupby('yr').citation_count.transform(lambda x: (x-x)+x.quantile(0.5))
 df['top_tenth_cutoff'] = df.groupby('yr').citation_count.transform(lambda x: (x-x)+x.quantile(0.9))
 df['top_twentieth_cutoff'] = df.groupby('yr').citation_count.transform(lambda x: (x-x)+x.quantile(0.95))
 df['top_hundredth_cutoff'] = df.groupby('yr').citation_count.transform(lambda x: (x-x)+x.quantile(0.99))
 df['top_halfpercent_cutoff'] = df.groupby('yr').citation_count.transform(lambda x: (x-x)+x.quantile(0.995))
-df['minus1'] = -1  # dummy column for use later.
 
 #
 # Plot all figures
@@ -51,7 +50,7 @@ plt.savefig('chinas_drop_vs_market_share.jpg')
 # Raw number of papers
 plt.close()
 df.groupby('yr').china.sum().plot(label='China')
-df.groupby('yr').usa.sum().plot(label='US')
+df.groupby('yr').us.sum().plot(label='US')
 plt.title('All AI Papers')
 plt.legend(); plt.xlabel(''); plt.ylabel('# Papers')
 plt.minorticks_on()
@@ -59,29 +58,32 @@ plt.savefig('all_papers.jpg')
 
 # Market share for different levels of citation
 cutoffcol_title_pairs = [
-    ('minus1', 'All Papers'),
-    ('top_half_cutoff', 'Top 50%'),
-    ('top_tenth_cutoff', 'Top 10%'),
-    ('top_hundredth_cutoff', 'Top 1%')
+    ('top_half_cutoff', 'Top 50% of AI Papers'),
+    ('top_twentieth_cutoff', 'Share of Papers in the Top 10% '),
+    ('top_halfpercent_cutoff', 'Share of Papers in the Top 1%')
 ]
 for cutoffcol, title in cutoffcol_title_pairs:
-    plt.close()
+    print(title)
     # Create time series for each country
     china_ts = df[df.citation_count>df[cutoffcol]].groupby('yr').china.mean()
-    us_ts = df[df.citation_count>df[cutoffcol]].groupby('yr').usa.mean()
+    us_ts = df[df.citation_count>df[cutoffcol]].groupby('yr').us.mean()
     # fit lines to last 4 years
     china_slope, china_intercept, r_value, p_value, std_err = stats.linregress([2015, 2016, 2017, 2018],china_ts[-4:])
-    usa_slope, usa_intercept, r_value, p_value, std_err = stats.linregress([2015, 2016, 2017, 2018],us_ts[-4:])
-    intercept_year = (china_intercept-usa_intercept) / (usa_slope-china_slope)
+    us_slope, us_intercept, r_value, p_value, std_err = stats.linregress([2015, 2016, 2017, 2018],us_ts[-4:])
+    intercept_year = (china_intercept-us_intercept) / (us_slope-china_slope)
     # Compute interpolations to plot
     fit_years = pd.Series(range(2014, 2026), index=range(2014, 2026))
     china_fit = fit_years*china_slope+china_intercept
-    usa_fit = fit_years*usa_slope+usa_intercept
-    china_fit.plot(style='--', label='China Fit')
-    usa_fit.plot(style='--', label='US Fit')
+    us_fit = fit_years*us_slope+us_intercept
+    # Save a CSV
+    pd.DataFrame({'China': china_ts, 'US':us_ts,
+        'China Fit': china_fit, 'US Fit': us_fit}).to_csv(title+'.csv')
     # Plot
+    plt.close()
     china_ts.plot(label='China')
     us_ts.plot(label='US')
+    china_fit.plot(style='--', label='China Fit')
+    us_fit.plot(style='--', label='US Fit')
     plt.title(title + ' : Intercept in ' + str(int(intercept_year)))
     plt.legend(); plt.xlabel(''); plt.ylabel('Market Share')
     plt.minorticks_on()
