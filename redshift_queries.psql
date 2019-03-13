@@ -42,7 +42,6 @@ select *,
     when TRIM(normalizedname) like '%tsinghua%' then true
     when TRIM(normalizedname) like '%tianjin%' then true
     when TRIM(normalizedname) like '%wuhan%' then true
-    when TRIM(normalizedname) like '%nanyang%' then true
     when TRIM(normalizedname) like '%huazhong%' then true
     when TRIM(normalizedname) like '%zhejiang%' then true
     when TRIM(normalizedname) like '%xidian%' then true
