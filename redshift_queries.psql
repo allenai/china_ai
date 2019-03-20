@@ -42,7 +42,6 @@ select *,
     when TRIM(normalizedname) like '%tsinghua%' then true
     when TRIM(normalizedname) like '%tianjin%' then true
     when TRIM(normalizedname) like '%wuhan%' then true
-    when TRIM(normalizedname) like '%nanyang%' then true
     when TRIM(normalizedname) like '%huazhong%' then true
     when TRIM(normalizedname) like '%zhejiang%' then true
     when TRIM(normalizedname) like '%xidian%' then true
@@ -53,10 +52,10 @@ select *,
 from mag_affiliations;
 
 -- All author/paper pairs, along with country heuristics for the author
-create view paper_authors_w_countries as
+create or replace view paper_authors_w_countries as
 select "paper id", "author id",
-    i."affiliation id",
-    i.normalizedname, i.displayname,
+    --i."affiliation id",
+    --i.normalizedname, i.displayname,
     -- US
     bool_or(dotcom) as dotcom,
     bool_or(dotedu) as dotedu,
@@ -68,7 +67,7 @@ select "paper id", "author id",
 from mag_paperauthoraffiliations auths
 left outer join institutions i
 on auths."affiliation id"=i."affiliation id"
-group by "author id", "paper id", normalizedname, displayname, i."affiliation id";
+group by "author id", "paper id" --, normalizedname, displayname, i."affiliation id";
 create table paper_authors_w_countries_table as select * from paper_authors_w_countries;
 
 --
